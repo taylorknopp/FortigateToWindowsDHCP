@@ -130,10 +130,28 @@ ForEach ($line in $fileContent) {
     $x++
 
   }
-  for($x = 0; $x -le $startReservationSections.count - 1; $x++)
+ 
+  Install-WindowsFeature DHCP -IncludeManagementTools
+  Add-DhcpServerv4Scope -name $scopeName -StartRange $startIP -EndRange $endIP -SubnetMask $netMask -State Active
+  Set-DhcpServerv4OptionValue -Router $defaultGatway
+  Set-DhcpServerv4OptionValue -DnsServer $dnsServers -Force
+  $scopeID = $startIP.Substring(0,$startIP.Length - $startIP.IndexOf(".")) + 0
+  #Write-Output $scopeID
+  for($i =0; $i -le $startReservationSections.Length - 1; $i++)
   {
-    #Write-Output $dhcpLines[$startReservationSections[$x]..$endReservationSections[$x]]
+    $resevationAddress = $dhcpLines[$startReservationSections[$i] + 1].Trim()
+    $resevationAddress = $resevationAddress.Substring(7)
+    $macAddress = $dhcpLines[$startReservationSections[$i] + 2].Trim()
+    $macAddress = $macAddress.Substring(8).Replace(":","-")
+    $name = $dhcpLines[$startReservationSections[$i] + 3].Trim()
+    $name = $name.Substring(17,$name.Length - 18)
+    #Write-Output $resevationAddress $macAddress $name
+
+    Add-DhcpServerv4Reservation -ScopeId $scopeID -IPAddress $resevationAddress -ClientId $macAddress -Name $name 
 
   }
+ 
+
+
   #Write-Output $startReservationSections.Count
   #Write-Output $endReservationSections.Count
