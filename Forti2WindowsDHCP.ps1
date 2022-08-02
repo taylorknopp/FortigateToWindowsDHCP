@@ -145,7 +145,8 @@ ForEach ($line in $fileContent) {
     $macAddress = $macAddress.Substring(8).Replace(":","-")
     $name = $dhcpLines[$startReservationSections[$i] + 3].Trim()
     $name = $name.Substring(17,$name.Length - 18)
-    #Write-Output $resevationAddress $macAddress $name
+    $whatWeAreDoing = "Adding Reservation for " + $name + " @ " + $resevationAddress + " with mac of " + $macAddress
+    Write-Output $whatWeAreDoing
 
     Add-DhcpServerv4Reservation -ScopeId $scopeID -IPAddress $resevationAddress -ClientId $macAddress -Name $name 
 
